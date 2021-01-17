@@ -104,13 +104,13 @@ public class Tokenizer {
                     token+=it.nextChar();
                 }
             }
-            double num = Double.valueOf(token);
+            double num = Double.valueOf(token.toString());
             Token toke = new Token(TokenType.DOUBLE_LITERAL, num, start, it.currentPos());
             return toke;
         }
 
         if(token.length() != 0){
-            long num = Long.valueOf(token);
+            long num = Long.valueOf(token.toString());
             Token toke = new Token(TokenType.UINT_LITERAL, num, start, it.currentPos());
             return toke;
         }
@@ -231,12 +231,12 @@ public class Tokenizer {
         else throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
     }
 
-    private void lexRegular(char nowC) throws TokenizeError {
+    private void lexRegular(char now) throws TokenizeError {
         Pattern pat = Pattern.compile("[^\"\\\\]");
-        Matcher mat = pat.matcher(String.valueOf(nowC));
+        Matcher mat = pat.matcher(String.valueOf(now));
         boolean matches = mat.matches();
         if(matches){
-            token+=nowC;
+            token+=now;
         }
         else throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
     }

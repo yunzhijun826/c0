@@ -14,7 +14,7 @@ import java.util.Scanner;
 public class AnalyserTest {
 
     private Tokenizer init(){
-        File file = new File("/Users/wzy/Desktop/c0-compiler/Analysetest.txt");
+        File file = new File("/Users/lyx/Desktop/c0-compiler/Analysetest.txt");
         Scanner sc = null;
         try {
             sc = new Scanner(file);
