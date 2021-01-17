@@ -1,12 +1,13 @@
+
 package instruction;
 
 import java.util.ArrayList;
 
 public class FnInstruction {
     private int name;
-    private int retSlots;
-    private int paramSlots;
-    private int locSlots;
+    private int ret_slots;
+    private int param_slots;
+    private int loc_slots;
     private int bodyCount;
     private ArrayList<Instruction> bodyItem;
 
@@ -14,9 +15,9 @@ public class FnInstruction {
     public String toString() {
         String out=
                 "name=" + name +
-                        ", retSlots=" + retSlots +
-                        ", paramSlots=" + paramSlots +
-                        ", locSlots=" + locSlots +
+                        ", ret_slots=" + ret_slots +
+                        ", param_slots=" + param_slots +
+                        ", loc_slots=" + loc_slots +
                         ", bodyCount=" + bodyCount +"\n";
         for (Instruction instruction : bodyItem) {
             out+=instruction.toString()+"\n";
@@ -36,52 +37,28 @@ public class FnInstruction {
         this.name = name;
     }
 
-//    public int getRet_slots() {
-//        return ret_slots;
-//    }
-
-//    //public void setRet_slots(int ret_slots) {
-//        this.retSlots = ret_slots;
-//    }
-//
-//    public int getParam_slots() {
-//        return param_slots;
-//    }
-//
-//    public void setParam_slots(int param_slots) {
-//        this.param_slots = param_slots;
-//    }
-//
-//    public int getLoc_slots() {
-//        return loc_slots;
-//    }
-//
-//    public void setLoc_slots(int loc_slots) {
-//        this.loc_slots = loc_slots;
-//    }
-
-    public int getRetSlots() {
-        return retSlots;
+    public int getRet_slots() {
+        return ret_slots;
     }
 
-    public void setRetSlots(int retSlots) {
-        this.retSlots = retSlots;
+    public void setRet_slots(int ret_slots) {
+        this.ret_slots = ret_slots;
     }
 
-    public int getParamSlots() {
-        return paramSlots;
+    public int getParam_slots() {
+        return param_slots;
     }
 
-    public void setParamSlots(int paramSlots) {
-        this.paramSlots = paramSlots;
+    public void setParam_slots(int param_slots) {
+        this.param_slots = param_slots;
     }
 
-    public int getLocSlots() {
-        return locSlots;
+    public int getLoc_slots() {
+        return loc_slots;
     }
 
-    public void setLocSlots(int locSlots) {
-        this.locSlots = locSlots;
+    public void setLoc_slots(int loc_slots) {
+        this.loc_slots = loc_slots;
     }
 
     public int getBodyCount() {

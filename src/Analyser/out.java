@@ -1,3 +1,4 @@
+
 package Analyser;
 
 import instruction.FnInstruction;
@@ -13,7 +14,9 @@ public class out {
         FileOutputStream file = new FileOutputStream(new File(name));
         file.write(intToByte(0x72303b3e));
         file.write(intToByte(0x1));
+
         file.write(intToByte(globalV.size()));
+
         for(int i = 0; i < globalV.size(); i ++){ //全局
             if(globalV.get(i).equals("1")){
                 file.write(0);
@@ -35,9 +38,9 @@ public class out {
 
         for(int i = 0; i < fnList.size(); i ++){ //function
             file.write(intToByte(fnList.get(i).getName()));
-            file.write(intToByte(fnList.get(i).getRetSlots()));
-            file.write(intToByte(fnList.get(i).getParamSlots()));
-            file.write(intToByte(fnList.get(i).getLocSlots()));
+            file.write(intToByte(fnList.get(i).getRet_slots()));
+            file.write(intToByte(fnList.get(i).getParam_slots()));
+            file.write(intToByte(fnList.get(i).getLoc_slots()));
             file.write(intToByte(fnList.get(i).getBodyCount()));
 
             ArrayList<Instruction> fninstructions = fnList.get(i).getBodyItem();

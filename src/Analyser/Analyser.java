@@ -14,7 +14,6 @@ public class Analyser {
 
     Tokenizer tokenizer;
     ArrayList<Instruction> instructions;
-    //    TokenType NeedtoPush = null;
     int globalOffset = 0;
     int argsOffset = 0;
     int localOffset = 0;
