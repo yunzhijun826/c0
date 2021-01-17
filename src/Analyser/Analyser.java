@@ -3,16 +3,12 @@ package Analyser;
 import Tokenizer.Token;
 import Tokenizer.TokenType;
 import Tokenizer.Tokenizer;
-
 import error.*;
 import instruction.FnInstruction;
 import instruction.Instruction;
 import instruction.Operation;
 import util.Pos;
-
-
 import java.util.*;
-
 
 public class Analyser {
 
