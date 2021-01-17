@@ -9,55 +9,64 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 
 public class out {
-    public static void Out(String name, ArrayList<String> globalV, ArrayList<FnInstruction> fnList) throws Exception{
+    public static void Out(String name, ArrayList<String> global_v, ArrayList<FnInstruction> fn_list) throws Exception{
         FileOutputStream file = new FileOutputStream(new File(name));
         file.write(intToByte(0x72303b3e));
         file.write(intToByte(0x1));
-
-        file.write(intToByte(globalV.size()));
-
-        for(int i = 0; i < globalV.size(); i ++){ //全局
-            if(globalV.get(i)=="1"){
+        file.write(intToByte(global_v.size()));
+        int globalSize=global_v.size();
+        for(int i = 0; i < globalSize; i ++){ //全局
+            if(global_v.get(i)=="1"){
                 file.write(0);
                 file.write(intToByte(8));
                 file.write(longToByte(0L));
-            }else if(globalV.get(i) == "0"){
+            }else if(global_v.get(i) == "0"){
                 file.write(1);
                 file.write(intToByte(8));
                 file.write(longToByte(0L));
             }
             else{ //函数名、字符串
                 file.write(1);
-                file.write(globalV.get(i).length());
-                file.write(globalV.get(i).getBytes());
+                file.write(global_v.get(i).length());
+                file.write(global_v.get(i).getBytes());
             }
         }
+        int fn_list_size=fn_list.size();
+        file.write(intToByte(fn_list_size));// functions.count
 
-        file.write(intToByte(fnList.size()));// functions.count
+        for(int i = 0; i < fn_list_size; i ++){ //function
+            file.write(intToByte(fn_list.get(i).getName()));
+            file.write(intToByte(fn_list.get(i).getRet_slots()));
+            file.write(intToByte(fn_list.get(i).getParam_slots()));
+            file.write(intToByte(fn_list.get(i).getLoc_slots()));
+            file.write(intToByte(fn_list.get(i).getBodyCount()));
 
-        for(int i = 0; i < fnList.size(); i ++){ //function
-            file.write(intToByte(fnList.get(i).getName()));
-            file.write(intToByte(fnList.get(i).getRet_slots()));
-            file.write(intToByte(fnList.get(i).getParam_slots()));
-            file.write(intToByte(fnList.get(i).getLoc_slots()));
-            file.write(intToByte(fnList.get(i).getBodyCount()));
+            ArrayList<Instruction> fn_instructions = fn_list.get(i).getBodyItem();
+            int fn_instructionssize=fn_instructions.size();
 
-            ArrayList<Instruction> fninstructions = fnList.get(i).getBodyItem();
-
-            for(int j = 0; j < fninstructions.size(); j ++){
-                file.write(fninstructions.get(j).getOpt().getI());
-                if(fninstructions.get(j).getValue() != null){ //有操作数
-                    if(fninstructions.get(j).getOpt() == Operation.push){ //是push
-                        file.write(longToByte((long)fninstructions.get(j).getValue()));
+            for(int j = 0; j < fn_instructionssize; j ++){
+                file.write(fn_instructions.get(j).getOpt().getI());
+                if(fn_instructions.get(j).getValue() != null){ //有操作数
+                    if(fn_instructions.get(j).getOpt() == Operation.push){ //是push
+                        file.write(longToByte((long)fn_instructions.get(j).getValue()));
                     }
                     else{
-                        file.write(intToByte((int)fninstructions.get(j).getValue()));
+                        file.write(intToByte((int)fn_instructions.get(j).getValue()));
                     }
                 }
             }
         }
     }
 
+
+    public static byte[] intToByte(int val) {
+        byte[] b = new byte[4];
+        b[3] = (byte) (val & 0xff);
+        b[2] = (byte) ((val >> 8) & 0xff);
+        b[1] = (byte) ((val >> 16) & 0xff);
+        b[0] = (byte) ((val >> 24) & 0xff);
+        return b;
+    }
     public static byte[] longToByte(long val) {
         byte[] b = new byte[8];
         b[7] = (byte) (val & 0xff);
@@ -68,15 +77,6 @@ public class out {
         b[2] = (byte) ((val >> 40) & 0xff);
         b[1] = (byte) ((val >> 48) & 0xff);
         b[0] = (byte) ((val >> 56) & 0xff);
-        return b;
-    }
-
-    public static byte[] intToByte(int val) {
-        byte[] b = new byte[4];
-        b[3] = (byte) (val & 0xff);
-        b[2] = (byte) ((val >> 8) & 0xff);
-        b[1] = (byte) ((val >> 16) & 0xff);
-        b[0] = (byte) ((val >> 24) & 0xff);
         return b;
     }
 }

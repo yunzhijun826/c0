@@ -7,63 +7,55 @@ import java.util.ArrayList;
 public class Symbol {
     private String name;
     private int chain=-1;
-    private TokenType type;
+    private TokenType tokenType;
     private boolean isConst=false;
     private boolean isFn=false;
-    private ArrayList<TokenType> params=null;
+    private ArrayList<TokenType> paramsList=null;
     private SymbolType symbolType;
-    private int fnoffset;
+    private int fnOffset;
     private int offset;
 
-    public Symbol(String name, int chain, TokenType type, boolean isConst, SymbolType symbolType, int offset) {
+    public Symbol(String name, int chain, TokenType tokenType, boolean isConst, SymbolType symbolType, int offset) {
         this.name = name;
         this.chain = chain;
-        this.type = type;
+        this.tokenType = tokenType;
         this.isConst = isConst;
         this.symbolType = symbolType;
         this.offset = offset;
     }
 
-    public Symbol(String name,boolean isFn, int offset, int fnoffset) {
+    public Symbol(String name,boolean isFn, int offset, int fnOffset) {
         this.name = name;
         this.isFn = isFn;
-        this.params = new ArrayList<TokenType>();
+        this.paramsList = new ArrayList<TokenType>();
         this.symbolType = SymbolType.global;
         this.offset = offset;
-        this.fnoffset = fnoffset;
+        this.fnOffset = fnOffset;
         this.isConst = true;
     }
 
-    public int getFnoffset() {
-        return fnoffset;
+    public String getName() {
+        return name;
     }
 
-    public void setFnoffset(int fnoffset) {
-        this.fnoffset = fnoffset;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public SymbolType getSymbolType() {
-        return symbolType;
+    public int getChain() {
+        return chain;
     }
 
-    public void setSymbolType(SymbolType symbolType) {
-        this.symbolType = symbolType;
+    public void setChain(int chain) {
+        this.chain = chain;
     }
 
-    public int getOffset() {
-        return offset;
+    public TokenType getTokenType() {
+        return tokenType;
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
-    public TokenType getType() {
-        return type;
-    }
-
-    public void setType(TokenType type) {
-        this.type = type;
+    public void setTokenType(TokenType tokenType) {
+        this.tokenType = tokenType;
     }
 
     public boolean isConst() {
@@ -82,27 +74,106 @@ public class Symbol {
         isFn = fn;
     }
 
-    public ArrayList<TokenType> getParams() {
-        return params;
+    public ArrayList<TokenType> getParamsList() {
+        return paramsList;
     }
 
-    public void setParams(ArrayList<TokenType> params) {
-        this.params = params;
+    public void setParamsList(ArrayList<TokenType> paramsList) {
+        this.paramsList = paramsList;
     }
 
-    public String getName() {
-        return name;
+    public SymbolType getSymbolType() {
+        return symbolType;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setSymbolType(SymbolType symbolType) {
+        this.symbolType = symbolType;
     }
 
-    public int getChain() {
-        return chain;
+    public int getFnOffset() {
+        return fnOffset;
     }
 
-    public void setChain(int chain) {
-        this.chain = chain;
+    public void setFnOffset(int fnOffset) {
+        this.fnOffset = fnOffset;
     }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+//    public int getFnoffset() {
+//        return fnOffset;
+//    }
+//
+//    public void setFnoffset(int fnoffset) {
+//        this.fnOffset = fnoffset;
+//    }
+//
+//    public SymbolType getSymbolType() {
+//        return symbolType;
+//    }
+//
+//    public void setSymbolType(SymbolType symbolType) {
+//        this.symbolType = symbolType;
+//    }
+//
+//    public int getOffset() {
+//        return offset;
+//    }
+//
+//    public void setOffset(int offset) {
+//        this.offset = offset;
+//    }
+//
+//    public TokenType getType() {
+//        return tokenType;
+//    }
+//
+//    public void setType(TokenType tokenType) {
+//        this.tokenType = tokenType;
+//    }
+//
+//    public boolean isConst() {
+//        return isConst;
+//    }
+//
+//    public void setConst(boolean aConst) {
+//        isConst = aConst;
+//    }
+//
+//    public boolean isFn() {
+//        return isFn;
+//    }
+//
+//    public void setFn(boolean fn) {
+//        isFn = fn;
+//    }
+//
+//    public ArrayList<TokenType> getParams() {
+//        return params;
+//    }
+//
+//    public void setParams(ArrayList<TokenType> params) {
+//        this.params = params;
+//    }
+//
+//    public String getName() {
+//        return name;
+//    }
+//
+//    public void setName(String name) {
+//        this.name = name;
+//    }
+//
+//    public int getChain() {
+//        return chain;
+//    }
+//
+//    public void setChain(int chain) {
+//        this.chain = chain;
+//    }
 }
