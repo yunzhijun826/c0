@@ -1,26 +1,26 @@
 package Tokenizer;
 
 public enum TokenType {
-    /** 空 */
-    None,
 
-    /** 标识符 */
-    IDENT,
+    None, //空
 
-    /** 类型 */
+    /** 标识符 **/
+    IDENT,  //标识符
+
+    /**类型**/
     DOUBLE,
     INT,
     VOID,
     BOOL,
 
 
-    /** 字面量 */
+    /**字面量**/
     UINT_LITERAL, //无符号整数
     STRING_LITERAL, //字符串常量
     DOUBLE_LITERAL, //double浮点数
     CHAR_LITERAL, //char
 
-    /** 关键字 */
+    /**关键字**/
     FN_KW,  //'fn'
     LET_KW,    //'let'
     CONST_KW,  // 'const'
@@ -32,7 +32,7 @@ public enum TokenType {
     BREAK_KW, //'break'
     CONTINUE_KW, // 'continue'
 
-    /** 运算符 */
+    /**运算符**/
     PLUS,      // '+'
     MINUS,     // '-'
     MUL,       // '*'
@@ -53,6 +53,6 @@ public enum TokenType {
     COLON,     // ':'
     SEMICOLON, // ';'
 
-    /** 文件尾 */
+
     EOF,
 }

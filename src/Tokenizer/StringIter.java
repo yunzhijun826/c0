@@ -1,10 +1,11 @@
 package Tokenizer;
 
+
+import util.Pos;
+
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Scanner;
-
-import util.Pos;
 
 /**
  * 这是一个从 C++ 版本抄过来的字符迭代器
@@ -41,7 +42,9 @@ public class StringIter {
             return;
         }
         while (scanner.hasNext()) {
-            linesBuffer.add(scanner.nextLine() + '\n');
+            String s = scanner.nextLine();
+            System.out.println(s);
+            linesBuffer.add( s + '\n');
         }
         // todo:check read \n?
         initialized = true;

@@ -22,7 +22,7 @@ public class Analyser {
     int globalOffset = 0;
     int argsOffset = 0;
     int localOffset = 0;
-    int fnOffset = 0;
+    int fnOffset = 1;
     ArrayList<String> GlobalVariable=new ArrayList<>();
     ArrayList<FnInstruction> fnLists = new ArrayList<>();
     ArrayList<Instruction> CurrentFnInstruction;
@@ -56,10 +56,9 @@ public class Analyser {
     /**
      * 符号表
      */
-
-    HashMap<String, Integer> symbolHash = new HashMap<>();
     Stack<Symbol> symbolTable = new Stack<Symbol>();
     Stack<Integer> symbolInt = new Stack<>();
+    HashMap<String, Integer> symbolHash = new HashMap<>();
 
     /**
      * 下一个变量的栈偏移
@@ -458,7 +457,6 @@ public class Analyser {
         if(tyToken.getValue().equals("int")){
             tyToken.setTokenType(TokenType.INT);
             fnInstruction.setRet_slots(1); //return数量置1
-            argsOffset++;
             for(int i = symbolTable.size()-1; symbolTable.get(i).getSymbolType() == SymbolType.args; i--){
                 symbolTable.get(i).setOffset(symbolTable.get(i).getOffset()+1);
             }
@@ -469,7 +467,6 @@ public class Analyser {
         else if(tyToken.getValue().equals("double")){
             tyToken.setTokenType(TokenType.DOUBLE);
             fnInstruction.setRet_slots(1);
-            argsOffset++;
             for(int i = symbolTable.size()-1; symbolTable.get(i).getSymbolType() == SymbolType.args; i--){
                 symbolTable.get(i).setOffset(symbolTable.get(i).getOffset()+1);
             }
@@ -669,22 +666,30 @@ public class Analyser {
                     CurrentFnInstruction.add(new Instruction(Operation.callname, currentGlobal));
                 }
             } else { //只有IDENT
-                if (index == null) {
+                if(index==null&&nameToken.getValue().toString().equals("int")){
+                    type=TokenType.INT;
+                }
+                else if(index==null&&nameToken.getValue().toString().equals("double")){
+                    type=TokenType.DOUBLE;
+                }
+                else if (index == null) {
                     throw new AnalyzeError(ErrorCode.NotDeclared, nameToken.getStartPos());
                 }
-                Symbol symbol = symbolTable.get(index);
+                else{
+                    Symbol symbol = symbolTable.get(index);
 
-                if(symbol.getSymbolType() == SymbolType.global){ //取地址
-                    CurrentFnInstruction.add(new Instruction(Operation.globa, symbol.getOffset()));
-                }else if(symbol.getSymbolType() == SymbolType.local){
-                    CurrentFnInstruction.add(new Instruction(Operation.loca, symbol.getOffset()));
-                }else{
-                    CurrentFnInstruction.add(new Instruction(Operation.arga, symbol.getOffset()));
+                    if(symbol.getSymbolType() == SymbolType.global){ //取地址
+                        CurrentFnInstruction.add(new Instruction(Operation.globa, symbol.getOffset()));
+                    }else if(symbol.getSymbolType() == SymbolType.local){
+                        CurrentFnInstruction.add(new Instruction(Operation.loca, symbol.getOffset()));
+                    }else{
+                        CurrentFnInstruction.add(new Instruction(Operation.arga, symbol.getOffset()));
+                    }
+
+                    CurrentFnInstruction.add(new Instruction(Operation.load64)); //取值
+
+                    type = symbolTable.get(index).getType();
                 }
-
-                CurrentFnInstruction.add(new Instruction(Operation.load64)); //取值
-
-                type = symbolTable.get(index).getType();
             }
         }
 
@@ -777,23 +782,24 @@ public class Analyser {
      */
     private void OPGAnalyse(Stack<TokenType> s, Stack Ns) throws TokenizeError {
         System.out.println("OPG开始分析");
-        int sch = Symbol.indexOf(s.peek());
-        int ch = Symbol.indexOf(peek().getTokenType());
+        while (true) { //栈内大于当前 规约
+            int sch = Symbol.indexOf(s.peek());
+            int ch = Symbol.indexOf(peek().getTokenType());
 
 
-        if (sch == -1 && ch == -1) { //都为#
-            System.out.println("没有符号可以规约啦 都是# 结束！");
-            return;
-        } else if (sch == -1 || SymbolMatrix[sch][ch] == 0) { //栈内优先级小于当前字符 入栈
-            System.out.println("栈内的符号：" + s.peek() + " 栈外的符号：" + peek().getTokenType() + " 栈内优先级小于栈外，入栈！");
-            s.push(Symbol.get(ch));
+            if (sch == -1 && ch == -1) { //都为#
+                System.out.println("没有符号可以规约啦 都是# 结束！");
+                return;
+            } else if (sch == -1 || SymbolMatrix[sch][ch] == 0) { //栈内优先级小于当前字符 入栈
+                System.out.println("栈内的符号：" + s.peek() + " 栈外的符号：" + peek().getTokenType() + " 栈内优先级小于栈外，入栈！");
+                s.push(Symbol.get(ch));
 
-            next();
-            System.out.println("此时栈中符号：" + s);
-        } else {
-            while ((ch == -1 || SymbolMatrix[sch][ch] == 1) && s.size() > 1) { //栈内大于当前 规约
-                System.out.println("站内符号：" + s.peek() + " 栈外符号：" + peek().getTokenType() + " 要规约了");
-                reduction(s, Ns);
+                next();
+                System.out.println("此时栈中符号：" + s);
+                return;
+            } else if((ch == -1 || SymbolMatrix[sch][ch] == 1) && s.size() > 1){
+                    System.out.println("站内符号：" + s.peek() + " 栈外符号：" + peek().getTokenType() + " 要规约了");
+                    reduction(s, Ns);
             }
         }
     }
@@ -1246,7 +1252,7 @@ public class Analyser {
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, new Pos(1,0));
         }
         analyseBlockStmt(false, tyTokenType, true, breakEndPos, InitPos);
-        CurrentFnInstruction.add(new Instruction(Operation.br, InitPos-CurrentFnInstruction.size()+1));
+        CurrentFnInstruction.add(new Instruction(Operation.br, InitPos-CurrentFnInstruction.size()));
         CurrentFnInstruction.get(currentPos).setValue(CurrentFnInstruction.size()-1 - currentPos);
         for(int i = 0; i < breakEndPos.size(); i ++){
             CurrentFnInstruction.get(breakEndPos.get(i)).setValue(CurrentFnInstruction.size()-1-breakEndPos.get(i)); //存每一个break
@@ -1274,6 +1280,7 @@ public class Analyser {
         hasReturn = analyseBlockStmt(false, tyTokenType, isWhile, breakEndPos, continuePos); //if 第一个block块
         CurrentFnInstruction.add(new Instruction(Operation.br)); //if块结束跳转
         int endPos = CurrentFnInstruction.size()-1;
+        CurrentFnInstruction.get(currentPos).setValue(CurrentFnInstruction.size()-1 - currentPos);
 
 
 
@@ -1281,21 +1288,25 @@ public class Analyser {
         while (nextIf(TokenType.ELSE_KW) != null) { //如果有else
             System.out.println("有else哦");
             if (nextIf(TokenType.IF_KW) != null) { // 是else if的情况
-                CurrentFnInstruction.get(currentPos).setValue(CurrentFnInstruction.size()-1 - currentPos);
                 ifexpr = analyseExpr(true);
+                CurrentFnInstruction.add(new Instruction(Operation.brtrue, 1));
+                CurrentFnInstruction.add(new Instruction(Operation.br));
+                int currentPos1 = CurrentFnInstruction.size()-1; //br指令的当前位置
+
+
+
                 if(ifexpr == TokenType.VOID){
                     throw new AnalyzeError(ErrorCode.DuplicateDeclaration, new Pos(1,0));
                 }
                 hasReturn &= analyseBlockStmt(false, tyTokenType, isWhile, breakEndPos, continuePos);
                 CurrentFnInstruction.add(new Instruction(Operation.br));
                 Pos.add(CurrentFnInstruction.size()-1);
+                CurrentFnInstruction.get(currentPos1).setValue(CurrentFnInstruction.size()-1 - currentPos1);
             } else if (check(TokenType.L_BRACE)) { //只有else的情况
-                CurrentFnInstruction.get(currentPos).setValue(CurrentFnInstruction.size()-1 - currentPos);
                 hasReturn &= analyseBlockStmt(false, tyTokenType, isWhile, breakEndPos, continuePos);
                 hasElse = true;
                 break;
             }
-            CurrentFnInstruction.get(currentPos).setValue(CurrentFnInstruction.size()-1 - currentPos);
         }
         CurrentFnInstruction.get(endPos).setValue(CurrentFnInstruction.size()-1-endPos);
         for(int i = 0; i < Pos.size(); i ++){

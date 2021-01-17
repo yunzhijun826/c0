@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class TokenizerTest {
     private Tokenizer init(){
-        File file = new File("/Users/lyx/bydzy/c0-compiler/Analysetest.txt");
+        File file = new File("/Users/lyx/Desktop/c0-compiler/Analysetest.txt");
         Scanner sc = null;
         try {
             sc = new Scanner(file);
@@ -27,11 +27,6 @@ public class TokenizerTest {
     public void TestlexUInt() throws TokenizeError {
         Tokenizer tokenizer = init();
         Token toke=null;
-//        do{
-//             toke = tokenizer.nextToken();
-//            System.out.println(toke+" "+toke.getEndPos());
-//        }while(toke.getTokenType() != TokenType.EOF);
-
         toke = tokenizer.nextToken();
         System.out.println(toke+" "+toke.getEndPos());
         while(toke.getTokenType() != TokenType.EOF){
