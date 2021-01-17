@@ -13,17 +13,21 @@ import java.util.*;
 public class Analyser {
 
     Tokenizer tokenizer;
+
     ArrayList<Instruction> instructions;
+
     int globalOffset = 0;
     int argsOffset = 0;
     int localOffset = 0;
     int fnOffset = 1;
+    int fnPos = 0;
+
     ArrayList<String> GlobalVariable=new ArrayList<>();
     ArrayList<FnInstruction> fnLists = new ArrayList<>();
     ArrayList<Instruction> CurrentFnInstruction;
+
     boolean hasMain = false;
-    int fnPos = 0;
-    boolean maintype = false;
+    boolean main_type = false;
 
 
     ArrayList<TokenType> Symbol = new ArrayList<TokenType>(Arrays.asList(TokenType.AS_KW, TokenType.MUL, TokenType.DIV, TokenType.PLUS, TokenType.MINUS, TokenType.GT, TokenType.LT, TokenType.LE, TokenType.GE, TokenType.EQ, TokenType.NEQ));
@@ -146,48 +150,52 @@ public class Analyser {
      * @param curPos     当前 token 的位置（报错用）
      * @throws AnalyzeError 如果重复定义了则抛异常
      */
-    private void addSymbol(String name, boolean isConstant, TokenType type, SymbolType symbolType, Pos curPos) throws AnalyzeError {
+    private void addSymbol(String name, boolean isConstant, TokenType tokenType, SymbolType symbolType, Pos curPos) throws AnalyzeError {
 
-        if (this.symbolHash.get(name) != null && this.symbolHash.get(name) >= symbolInt.peek()) { //如果现在读到的已经在当前块
+        if (this.symbolHash.get(name) != null&&this.symbolHash.get(name) >= symbolInt.peek()) { //如果现在读到的已经在当前块
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, curPos);
         } else {
             if (this.symbolHash.get(name) != null) { //如果读到的在之前的块里出现过
                 int chain = this.symbolHash.get(name);
                 switch (symbolType) {
+                    case local:
+                        this.symbolTable.push(new Symbol(name, chain, tokenType, symbolType, isConstant, localOffset++));
+                        break;
+
+                    case args:
+                        this.symbolTable.push(new Symbol(name, chain, tokenType, symbolType, isConstant, argsOffset++));
+                        break;
+
                     case global:
-                        this.symbolTable.push(new Symbol(name, chain, type, isConstant, symbolType, globalOffset++));
+                        this.symbolTable.push(new Symbol(name, chain, tokenType, symbolType, isConstant, globalOffset++));
                         if(isConstant){
                             GlobalVariable.add("0");
                         }else{
                             GlobalVariable.add("1");
                         }
                         break;
-                    case args:
-                        this.symbolTable.push(new Symbol(name, chain, type, isConstant, symbolType, argsOffset++));
-                        break;
-                    case local:
-                        this.symbolTable.push(new Symbol(name, chain, type, isConstant, symbolType, localOffset++));
-                        break;
                 }
-                this.symbolHash.put(name, symbolTable.size() - 1);
+                int size1=symbolTable.size() - 1;
+                this.symbolHash.put(name, size1);
             } else { //没出现过，先入符号栈，再加入hashmap
                 switch (symbolType) {
+                    case args:
+                        this.symbolTable.push(new Symbol(name, -1, tokenType, symbolType, isConstant, argsOffset++));
+                        break;
+                    case local:
+                        this.symbolTable.push(new Symbol(name, -1, tokenType, symbolType, isConstant, localOffset++));
+                        break;
                     case global:
-                        this.symbolTable.push(new Symbol(name, -1, type, isConstant, symbolType, globalOffset++));
+                        this.symbolTable.push(new Symbol(name, -1, tokenType, symbolType, isConstant,globalOffset++));
                         if(isConstant){
                             GlobalVariable.add("0");
                         }else{
                             GlobalVariable.add("1");
                         }
                         break;
-                    case args:
-                        this.symbolTable.push(new Symbol(name, -1, type, isConstant, symbolType, argsOffset++));
-                        break;
-                    case local:
-                        this.symbolTable.push(new Symbol(name, -1, type, isConstant, symbolType, localOffset++));
-                        break;
                 }
-                this.symbolHash.put(name, symbolTable.size() - 1);
+                int size1=symbolTable.size() - 1;
+                this.symbolHash.put(name, size1);
             }
         }
     }
@@ -196,9 +204,10 @@ public class Analyser {
         if (this.symbolHash.get(name) != null) {
             throw new AnalyzeError(ErrorCode.DuplicateDeclaration, curPos);
         } else {
-            this.symbolTable.push(new Symbol(name, true, globalOffset, fnOffset++));
-            this.symbolHash.put(name, symbolTable.size() - 1);
-            this.symbolInt.push(symbolTable.size());
+            this.symbolTable.push(new Symbol(name, true,  fnOffset++, globalOffset));
+            int size=symbolTable.size();
+            this.symbolHash.put(name, size - 1);
+            this.symbolInt.push(size);
             return this.symbolTable.peek();
         }
 
@@ -218,7 +227,6 @@ public class Analyser {
         // 示例函数，示例如何调用子程序
 
         analyseMain();
-
         expect(TokenType.EOF);
         System.out.println();
         for (String s : GlobalVariable) {
@@ -264,13 +272,13 @@ public class Analyser {
         startFn.setParam_slots(0);
         startFn.setLoc_slots(0);
         if(hasMain){
-            if(!maintype){
+            if(!main_type){
                 startFn.getBodyItem().add(new Instruction(Operation.stackalloc, 0));
             }else{
                 startFn.getBodyItem().add(new Instruction(Operation.stackalloc, 1));
             }
             startFn.getBodyItem().add(new Instruction(Operation.call, fnPos));
-            if(maintype){
+            if(main_type){
                 startFn.getBodyItem().add(new Instruction(Operation.popn,1));
             }
         }
@@ -453,7 +461,7 @@ public class Analyser {
             tyToken.setTokenType(TokenType.INT);
             fnInstruction.setRet_slots(1); //return数量置1
             for(int i = symbolTable.size()-1; symbolTable.get(i).getSymbolType() == SymbolType.args; i--){
-                symbolTable.get(i).setOffset(symbolTable.get(i).getOffset()+1);
+                symbolTable.get(i).setOffSet(symbolTable.get(i).getOffSet()+1);
             }
             if(nameToken.getValue().toString().equals("main")){
                 maintype = true;
@@ -463,17 +471,17 @@ public class Analyser {
             tyToken.setTokenType(TokenType.DOUBLE);
             fnInstruction.setRet_slots(1);
             for(int i = symbolTable.size()-1; symbolTable.get(i).getSymbolType() == SymbolType.args; i--){
-                symbolTable.get(i).setOffset(symbolTable.get(i).getOffset()+1);
+                symbolTable.get(i).setOffSet(symbolTable.get(i).getOffSet()+1);
             }
             if(nameToken.getValue().toString().equals("main")){
-                maintype = true;
+                main_type = true;
             }
         }
         else if(tyToken.getValue().equals("void")){
             tyToken.setTokenType(TokenType.VOID);
             fnInstruction.setRet_slots(0); //return数量置0
             if(nameToken.getValue() == "main"){
-                maintype = false;
+                main_type = false;
             }
         }
         else{
@@ -483,7 +491,7 @@ public class Analyser {
 
         fnInstruction.setParam_slots(argsOffset); //设置参数数量
 
-        currentSymbol.setType(tyToken.getTokenType()); //fn的type属性
+        currentSymbol.setTokenType(tyToken.getTokenType()); //fn的type属性
 
         // block_stmt
         localOffset = 0;
@@ -541,11 +549,11 @@ public class Analyser {
                 }
 
                 if(symbolTable.get(index).getSymbolType() == SymbolType.local){ //是局部变量
-                    CurrentFnInstruction.add(new Instruction(Operation.loca, symbolTable.get(index).getOffset()));
+                    CurrentFnInstruction.add(new Instruction(Operation.loca, symbolTable.get(index).getOffSet()));
                 }else if(symbolTable.get(index).getSymbolType() == SymbolType.global){
-                    CurrentFnInstruction.add(new Instruction(Operation.globa, symbolTable.get(index).getOffset()));
+                    CurrentFnInstruction.add(new Instruction(Operation.globa, symbolTable.get(index).getOffSet()));
                 }else{
-                    CurrentFnInstruction.add(new Instruction(Operation.arga, symbolTable.get(index).getOffset()));
+                    CurrentFnInstruction.add(new Instruction(Operation.arga, symbolTable.get(index).getOffSet()));
                 }
 
                 TokenType l_type = symbolTable.get(index).getType(); //取l_expr的类型
@@ -612,10 +620,10 @@ public class Analyser {
                     currentGlobal = globalOffset ++;
                 } else { //取到参数列表和返回类型
                     Symbol call_index = symbolTable.get(index);
-                    call_array = call_index.getParams();
-                    return_type = call_index.getType();
+                    call_array = call_index.getParamsList();
+                    return_type = call_index.getTokenType();
                     System.out.println("此时调用的函数： "+ call_index.getName());
-                    System.out.println("返回类型： "+call_index.getType());
+                    System.out.println("返回类型： "+call_index.getTokenType());
                 }
 
                 if(return_type == TokenType.INT || return_type == TokenType.DOUBLE){ //stackalloc 按返回类型判断
@@ -656,7 +664,7 @@ public class Analyser {
                     type = return_type;
                 }
                 if(index != null){
-                    CurrentFnInstruction.add(new Instruction(Operation.call, symbolTable.get(index).getFnoffset()));
+                    CurrentFnInstruction.add(new Instruction(Operation.call, symbolTable.get(index).getFnOffset()));
                 }else{
                     CurrentFnInstruction.add(new Instruction(Operation.callname, currentGlobal));
                 }
@@ -674,16 +682,16 @@ public class Analyser {
                     Symbol symbol = symbolTable.get(index);
 
                     if(symbol.getSymbolType() == SymbolType.global){ //取地址
-                        CurrentFnInstruction.add(new Instruction(Operation.globa, symbol.getOffset()));
+                        CurrentFnInstruction.add(new Instruction(Operation.globa, symbol.getOffSet()));
                     }else if(symbol.getSymbolType() == SymbolType.local){
-                        CurrentFnInstruction.add(new Instruction(Operation.loca, symbol.getOffset()));
+                        CurrentFnInstruction.add(new Instruction(Operation.loca, symbol.getOffSet()));
                     }else{
-                        CurrentFnInstruction.add(new Instruction(Operation.arga, symbol.getOffset()));
+                        CurrentFnInstruction.add(new Instruction(Operation.arga, symbol.getOffSet()));
                     }
 
                     CurrentFnInstruction.add(new Instruction(Operation.load64)); //取值
 
-                    type = symbolTable.get(index).getType();
+                    type = symbolTable.get(index).getTokenType();
                 }
             }
         }
@@ -1003,12 +1011,12 @@ public class Analyser {
                 case "double":
                     //加入符号表
                     addSymbol(nameToken.getValue().toString(), true, TokenType.DOUBLE, SymbolType.args, nameToken.getStartPos()); //常量加入符号栈
-                    this.symbolTable.get(this.symbolInt.peek() - 1).getParams().add(TokenType.DOUBLE); //把形参放进fn的paramlist
+                    this.symbolTable.get(this.symbolInt.peek() - 1).getParamsList().add(TokenType.DOUBLE); //把形参放进fn的paramlist
                     break;
                 case "int":
                     //加入符号表
                     addSymbol(nameToken.getValue().toString(), true, TokenType.INT, SymbolType.args, nameToken.getStartPos()); //常量加入符号栈
-                    this.symbolTable.get(this.symbolInt.peek() - 1).getParams().add(TokenType.INT);
+                    this.symbolTable.get(this.symbolInt.peek() - 1).getParamsList().add(TokenType.INT);
                     break;
                 default:
                     throw new AnalyzeError(ErrorCode.DuplicateDeclaration, nameToken.getStartPos());
@@ -1025,12 +1033,12 @@ public class Analyser {
                 case "double":
                     //加入符号表
                     addSymbol(nameToken.getValue().toString(), false, TokenType.DOUBLE, SymbolType.args, nameToken.getStartPos()); //常量加入符号栈
-                    this.symbolTable.get(this.symbolInt.peek() - 1).getParams().add(TokenType.DOUBLE); //把形参放进fn的paramlist
+                    this.symbolTable.get(this.symbolInt.peek() - 1).getParamsList().add(TokenType.DOUBLE); //把形参放进fn的paramlist
                     break;
                 case "int":
                     //加入符号表
                     addSymbol(nameToken.getValue().toString(), false, TokenType.INT, SymbolType.args, nameToken.getStartPos()); //常量加入符号栈
-                    this.symbolTable.get(this.symbolInt.peek() - 1).getParams().add(TokenType.INT);
+                    this.symbolTable.get(this.symbolInt.peek() - 1).getParamsList().add(TokenType.INT);
                     break;
                 default:
                     throw new AnalyzeError(ErrorCode.DuplicateDeclaration, nameToken.getStartPos());
