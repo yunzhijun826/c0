@@ -182,7 +182,7 @@ public class Tokenizer {
                 }
                 it.nextChar();
                 toke = new Token(TokenType.CHAR_LITERAL, cur, start, it.currentPos());
-                return toke;
+                //return toke;
             }
         }
         else{
