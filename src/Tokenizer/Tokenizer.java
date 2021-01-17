@@ -124,9 +124,6 @@ public class Tokenizer {
 
         it.nextChar();
         while(true){
-            if(it.isEOF()){
-                throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
-            }
             char peek = it.peekChar();
 
             if(peek == '"'){
@@ -149,12 +146,12 @@ public class Tokenizer {
         //token.setLength(0);
         token="";
         Pos start = it.currentPos();
-        Token toke = null;
+
         it.nextChar();
         char peek = it.peekChar();
 
         if(peek != '\'' && peek != '\\'){
-            toke = new Token(TokenType.CHAR_LITERAL, it.nextChar(), start, it.currentPos());
+            Token toke = new Token(TokenType.CHAR_LITERAL, it.nextChar(), start, it.currentPos());
         }
         else if(peek == '\\'){
             it.nextChar();
@@ -181,18 +178,11 @@ public class Tokenizer {
                     throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
                 }
                 it.nextChar();
-                toke = new Token(TokenType.CHAR_LITERAL, cur, start, it.currentPos());
+                Token toke = new Token(TokenType.CHAR_LITERAL, cur, start, it.currentPos());
                 return toke;
             }
         }
-        else{
-            throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
-        }
-        if(it.peekChar() != '\''){
-            throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
-        }
-        it.nextChar();
-        return toke;
+        return null;
     }
 
     private void lexEscape(char now) throws TokenizeError {
@@ -233,9 +223,15 @@ public class Tokenizer {
 
     private void lexRegular(char now) throws TokenizeError {
         Pattern pat = Pattern.compile("[^\"\\\\]");
+        //char peek = it.peekChar();
         Matcher mat = pat.matcher(String.valueOf(now));
         boolean matches = mat.matches();
+//        System.out.println(now);
+//        System.out.println(m);
         if(matches){
+//            it.nextChar();
+//            System.out.println("sd");
+            //token.append(now);
             token+=now;
         }
         else throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
@@ -306,11 +302,7 @@ public class Tokenizer {
                 // 填入返回语句
                 //throw new Error("Not implemented");
                 if(it.peekChar() == '/'){
-                    while (it.nextChar() != '\n'){
-                        if(it.isEOF()){
-                            throw new TokenizeError(ErrorCode.InvalidInput, it.previousPos());
-                        }
-                    }
+                    while (it.nextChar() != '\n');
                     return nextToken();
                 }
                 return new Token(TokenType.DIV, '/', it.previousPos(), it.currentPos());
